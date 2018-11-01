@@ -1,0 +1,3 @@
+[submodule "protobuf_envelope"]
+	path = protobuf_envelope
+	url = https://github.com/FocusCompany/protobuf_envelope
