@@ -7,8 +7,6 @@ import (
 	"log"
 )
 
-
-
 func fooHandler(request *routing.Context) error {
 	userId, err := validateJwt(request)
 	if err != nil {
@@ -18,8 +16,6 @@ func fooHandler(request *routing.Context) error {
 	fmt.Fprintf(request, "Hello, world, userID", userId.String())
 	return nil
 }
-
-
 
 func Init() {
 	router := routing.New()

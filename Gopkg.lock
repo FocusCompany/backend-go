@@ -53,6 +53,14 @@
   version = "v1.1"
 
 [[projects]]
+  digest = "1:88996a6b70e2cc7044c25caecd49e4d09bbcdd03e508f65d366f600cfb506dd6"
+  name = "github.com/pebbe/zmq4"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "5b443b6471cea4b4f9f85025530c04c93233f76a"
+  version = "v1.0.0"
+
+[[projects]]
   branch = "master"
   digest = "1:d6efa822e9b1e35da4653e912128933143d37d2358eebe2b35c1a5f60e028bd0"
   name = "github.com/qiangxue/fasthttp-routing"
@@ -110,8 +118,10 @@
   input-imports = [
     "github.com/dgrijalva/jwt-go",
     "github.com/go-pg/pg",
+    "github.com/pebbe/zmq4",
     "github.com/qiangxue/fasthttp-routing",
     "github.com/satori/go.uuid",
+    "github.com/valyala/fasthttp",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -4,7 +4,6 @@ import (
 	"github.com/go-pg/pg"
 )
 
-
 var (
 	connection *pg.DB
 )
@@ -24,4 +23,3 @@ func Init() error {
 func Get() *pg.DB {
 	return connection
 }
-

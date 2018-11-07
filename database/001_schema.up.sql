@@ -7,5 +7,6 @@ CREATE TABLE focus.event (
   "group_id" VARCHAR(36) NOT NULL,
   "window_name" VARCHAR(100),
   "process_name" VARCHAR(400),
-  "afk" BOOLEAN
+  "afk" BOOLEAN DEFAULT false,
+  "time" TIMESTAMP NOT NULL
 )
