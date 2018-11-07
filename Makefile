@@ -1,6 +1,9 @@
 build:
 	go build -o ./backend .
 
+fake:
+	go build -o ./fake_client github.com/FocusCompany/backend-go/fake
+
 migrate:
 	migrate -source file://database/ -database "postgres://postgres@127.0.0.1:5432?sslmode=disable" up
 
@@ -14,3 +17,5 @@ migrate-new:
 	migrate create -dir database -ext sql $(FILE)
 
 .DEFAULT_GOAL=build
+
+.PHONY: fake

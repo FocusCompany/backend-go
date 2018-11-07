@@ -15,15 +15,36 @@ func main() {
 
 	go api.Init()
 
-	zmq, err := zmq4.NewContext()
-	if err != nil {
-		fmt.Printf("failed to create ZMQ context")
-	}
-
-	_, err = zmq.NewSocket(zmq4.DEALER)
+	socket, err := zmq4.NewSocket(zmq4.DEALER)
 	if err != nil {
 		fmt.Printf("failed to create socket")
+		return
 	}
+
+	fmt.Println("Binding")
+	err = socket.Bind("tcp://0.0.0.0:5555")
+	if err != nil {
+		fmt.Printf("failed to bind socket")
+		return
+	}
+	fmt.Println("Starting to receive")
+	received, err := socket.Recv(0)
+
+	fmt.Printf("err = %v", err)
+	fmt.Printf(received)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	userID := uuid.NewV4()
 	groupID := uuid.NewV4()
