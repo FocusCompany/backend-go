@@ -1,4 +1,6 @@
-CREATE TABLE event (
+CREATE SCHEMA focus;
+
+CREATE TABLE focus.event (
   "id" SERIAL PRIMARY KEY,
   "user_id" VARCHAR(36) NOT NULL,
   "device_id" VARCHAR(36) NOT NULL,

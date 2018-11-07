@@ -1,1 +1,2 @@
-DROP TABLE event;
+DROP TABLE focus.event;
+DROP SCHEMA focus;

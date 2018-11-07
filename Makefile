@@ -12,3 +12,5 @@ drop-db:
 
 migrate-new:
 	migrate create -dir database -ext sql $(FILE)
+
+.DEFAULT_GOAL=build
