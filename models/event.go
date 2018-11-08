@@ -1,8 +1,8 @@
 package models
 
 import (
-	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/satori/go.uuid"
+	"time"
 )
 
 type Event struct {
@@ -14,5 +14,5 @@ type Event struct {
 	WindowsName string              `sql:"window_name" json:"windowName"`
 	ProcessName string              `sql:"process_name" json:"processName"`
 	Afk         bool                `sql:"afk" json:"afk"`
-	Time        timestamp.Timestamp `sql:"time" json:"time"`
+	Time        time.Time `sql:"time" json:"time"`
 }

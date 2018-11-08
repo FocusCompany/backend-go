@@ -5,9 +5,13 @@ import (
 	"github.com/FocusCompany/backend-go/api"
 	"github.com/FocusCompany/backend-go/database"
 	"github.com/FocusCompany/backend-go/models"
+	"github.com/FocusCompany/backend-go/proto"
+	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/ptypes"
 	"github.com/pebbe/zmq4"
 	"github.com/satori/go.uuid"
 	"sync"
+	"time"
 )
 
 func main() {
@@ -15,14 +19,13 @@ func main() {
 
 	go api.Init()
 
-	socket, err := zmq4.NewSocket(zmq4.DEALER)
+	socket, err := zmq4.NewSocket(zmq4.REP)
 	if err != nil {
 		fmt.Printf("failed to create socket")
 		return
 	}
 
-	fmt.Println("Binding")
-	err = socket.Bind("tcp://0.0.0.0:5555")
+	err = socket.Bind("tcp://*:5555")
 	if err != nil {
 		fmt.Printf("failed to bind socket")
 		return
@@ -30,42 +33,60 @@ func main() {
 	fmt.Println("Starting to receive")
 	received, err := socket.Recv(0)
 
-	fmt.Printf("err = %v", err)
-	fmt.Printf(received)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-	userID := uuid.NewV4()
-	groupID := uuid.NewV4()
-	deviceID := uuid.NewV4()
-
-	event := models.Event{
-		UserId:      userID,
-		GroupId:     groupID,
-		DeviceId:    deviceID,
-		WindowsName: "Skype",
-		ProcessName: "/programfiles/Skype.exe",
+	envelope := &Focus.Envelope{}
+	err = proto.Unmarshal([]byte(received), envelope)
+	if err != nil {
+		fmt.Printf("got error: %v", err)
+		return
 	}
 
-	db := database.Get()
-	if _, err := db.Model(&event).Insert(); err != nil {
-		fmt.Println("failed to insert event", err)
+	// Check JWT from envelope
+	userId, err := api.ValidateJwt(envelope.Jwt)
+	if err != nil {
+		fmt.Println("invalid JWT", err)
+		return
 	}
 
-	var getEvent models.Event
-	db.Model(&getEvent).Where("id = ?", event.ID).Select()
-	fmt.Printf(getEvent.ProcessName)
+
+	for _, event := range envelope.Events {
+		windowName := ""
+		processName := ""
+		afk := false
+
+		if event.PayloadType == "Afk" {
+			afk = true
+		} else if event.PayloadType == "ContextChanged" {
+			payload := &Focus.ContextEventPayload{}
+
+			if err := ptypes.UnmarshalAny(event.Payload, payload); err != nil {
+				fmt.Println("failed to unmarschal event", err)
+				return
+			}
+			windowName = string(payload.WindowName)
+			processName = string(payload.ProcessName)
+
+		} else {
+			return
+		}
+
+		// Insert event into DB
+		eventToInsert := models.Event{
+			UserId:      userId,
+			GroupId:     uuid.UUID{},
+			DeviceId:    uuid.FromStringOrNil(envelope.DeviceID),
+			WindowsName: windowName,
+			ProcessName: processName,
+			Afk:         afk,
+			Time:        time.Unix(event.Timestamp.Seconds, int64(event.Timestamp.Nanos)),
+		}
+
+		db := database.Get()
+		if _, err := db.Model(&eventToInsert).Insert(); err != nil {
+			fmt.Println("failed to insert event", err)
+		}
+		fmt.Println("Insert event", eventToInsert)
+	}
 
 	// Block for other goroutines
 	var wg sync.WaitGroup
