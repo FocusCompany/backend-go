@@ -16,6 +16,10 @@ drop-db:
 migrate-new:
 	migrate create -dir database -ext sql $(FILE)
 
+proto:
+	protoc --proto_path=./protobuf_envelope --go_out=:./proto protobuf_envelope/*.proto
+
+
 .DEFAULT_GOAL=build
 
-.PHONY: fake
+.PHONY: fake proto
