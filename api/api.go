@@ -8,7 +8,7 @@ import (
 )
 
 func fooHandler(request *routing.Context) error {
-	userId, err := validateJwt(request)
+	userId, err := ValidateJwtFromRequest(request)
 	if err != nil {
 		return err
 	}
