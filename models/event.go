@@ -6,7 +6,7 @@ import (
 )
 
 type Event struct {
-	tableName   struct{}            `sql:"focus.event"`
+	tableName   struct{}            `sql:"focus.events"`
 	ID          int32               `sql:"id" json:"id"`
 	UserId      uuid.UUID           `sql:"user_id,notnull" json:"userId"`
 	GroupId     uuid.UUID           `sql:"group_id,notnull" json:"groupId"`

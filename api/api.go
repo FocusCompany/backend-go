@@ -1,26 +1,22 @@
 package api
 
 import (
-	"fmt"
+	"github.com/golang/protobuf/jsonpb"
 	"github.com/qiangxue/fasthttp-routing"
 	"github.com/valyala/fasthttp"
 	"log"
 )
 
-func fooHandler(request *routing.Context) error {
-	userId, err := ValidateJwtFromRequest(request)
-	if err != nil {
-		return err
+var (
+	jsonMarshal = jsonpb.Marshaler{
+		EnumsAsInts:  false,
+		EmitDefaults: true,
 	}
-
-	fmt.Fprintf(request, "Hello, world, userID", userId.String())
-	return nil
-}
+)
 
 func Init() {
 	router := routing.New()
-
-	router.Get("/foo", fooHandler)
+	router.Post("/window", RequireBasicJwt, windowHandler)
 
 	log.Fatal(fasthttp.ListenAndServe(":8080", router.HandleRequest))
 }
