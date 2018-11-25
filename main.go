@@ -21,8 +21,19 @@ func main() {
 
 	socket, err := zmq4.NewSocket(zmq4.PULL)
 	defer socket.Close()
+
 	if err != nil {
 		fmt.Printf("failed to create socket")
+		return
+	}
+
+	err = socket.SetCurveServer(1)
+	if err == nil {
+		err = socket.SetCurveSecretkey("JTKVSB%%)wK0E.X)V>+}o?pNmC{O&4W4b!Ni{Lh6")
+	}
+
+	if err != nil {
+		fmt.Printf("failed to set socket curve")
 		return
 	}
 
