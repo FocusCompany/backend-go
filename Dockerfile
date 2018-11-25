@@ -28,5 +28,6 @@ COPY --from=build /go/bin/backend-go .
 RUN apk update && apk add --no-cache zeromq
 
 EXPOSE 8080
+EXPOSE 5555
 
 CMD [ "./backend-go"]
