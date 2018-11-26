@@ -10,6 +10,7 @@ func Init() {
 	router := routing.New()
 
 	api := router.Group("", SetCorsHeader)
+	api.Options("*", SetCorsHeader)
 
 	api.Post("/window", RequireBasicJwt, windowHandler)
 	api.Post("/window/list", RequireBasicJwt, windowListHandler)
