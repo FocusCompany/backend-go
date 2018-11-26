@@ -9,6 +9,7 @@ import (
 func Init() {
 	router := routing.New()
 	router.Post("/window", RequireBasicJwt, windowHandler)
+	router.Post("/process", RequireBasicJwt, processHandler)
 
 	log.Fatal(fasthttp.ListenAndServe(":8080", router.HandleRequest))
 }

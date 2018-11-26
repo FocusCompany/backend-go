@@ -8,7 +8,6 @@ import (
 	"time"
 )
 
-
 // PARAMS
 //
 // one of
@@ -19,7 +18,7 @@ import (
 // optional
 // 	- from:		date	- Beginning of events to get
 // 	- to:		date	- End of events to get
-func windowHandler(request *routing.Context) error {
+func processHandler(request *routing.Context) error {
 	events, err := getAllEvents(request)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -27,7 +26,7 @@ func windowHandler(request *routing.Context) error {
 	}
 
 	// Compute time per Process
-	var windows []Activity
+	var processes []Activity
 	var currentActivity Activity
 	for _, event := range events {
 		newActivity := Activity{
@@ -41,17 +40,17 @@ func windowHandler(request *routing.Context) error {
 
 		// Get the last activity with the same name as the current activity
 		isNew := true
-		for i := len(windows) - 1; i >= 0; i-- {
+		for i := len(processes) - 1; i >= 0; i-- {
 
 			//If the two events are more than 45 minutes apart
-			if windows[i].Window == currentActivity.Window && windows[i].End.Add(10 * time.Minute).After(currentActivity.Start) {
-				windows[i].End = currentActivity.End
+			if processes[i].Process == currentActivity.Process && processes[i].End.Add(10 * time.Minute).After(currentActivity.Start) {
+				processes[i].End = currentActivity.End
 				isNew = false
 			}
 		}
 
 		if isNew && !currentActivity.Start.IsZero() {
-			windows = append(windows, currentActivity)
+			processes = append(processes, currentActivity)
 		}
 		currentActivity = newActivity
 	}
@@ -59,10 +58,11 @@ func windowHandler(request *routing.Context) error {
 
 
 
-	response, err := json.Marshal(windows)
+	response, err := json.Marshal(processes)
 	if err != nil {
 		request.Error("failed to marshal JSON" + err.Error(), fasthttp.StatusInternalServerError)
 	}
 	request.SetBody(response)
 	return nil
 }
+

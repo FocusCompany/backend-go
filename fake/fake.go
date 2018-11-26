@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	socket, _ := zmq4.NewSocket(zmq4.PUSH)
+	socket, _ := zmq4.NewSocket(zmq4.DEALER)
 
 	err := socket.SetCurveServerkey("rq:rM>}U?@Lns47E1%kR.o@n%FcmmsL/@{H8]yf7")
 	err = socket.SetCurvePublickey("Yne@$w-vo<fVvi]a<NY6T1ed:M$fCG*[IaLV{hID")
@@ -56,7 +56,7 @@ func main() {
 
 		envelope := Focus.Envelope{
 			DeviceID:             "someID",
-			Jwt:                  "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiMjY4YTQ4YzctZjliNi00MzI0LWI5MzEtYmFkYmM3Y2M1YzM5IiwiZXhwIjoxNTQzMTYzNzI5LCJpYXQiOjE1NDMxNjE5Mjl9.vLj7VwwDIAM5_8amfyqyGMRvYTvu3iejLseTYroL8A8xAvrufs6AuJ_00DfKJZ91kL4W0q4TqMyAPbX5zRFDgS3o-fwdkejvzTyOCci3fRmow3449ROQu9acBagW76SOolwEa731WdJU-iC1HZJCA6Z74o1-NdLlCrAkeFEHSbw",
+			Jwt:                  "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiMjY4YTQ4YzctZjliNi00MzI0LWI5MzEtYmFkYmM3Y2M1YzM5IiwiZXhwIjoxNTQzMTY3ODQ2LCJpYXQiOjE1NDMxNjYwNDZ9.0qLV-cJlljMKiuq2W3wwBvtVF6Tr9FlT8O6KlYnWTW4eovV30PH8KmaQuXw-cb2qRX2LtCT7UMKVIn7Ww1UZlOzRSR4lBSc73rqyQEifQj2x9F17ujSDdng6RmAweTE9FoiU8e-1M5VUc3iQnHfVDDViFmYGEV8DOrbJElQxA8E",
 			Events: []*Focus.Event{&event},
 		}
 
