@@ -12,7 +12,6 @@ var publicKey = []byte(`-----BEGIN PUBLIC KEY-----
 MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDdlatRjRjogo3WojgGHFHYLugdUWAY9iR3fy4arWNA1KoS8kVw33cJibXr8bvwUAUparCwlvdbH6dvEOfou0/gCFQsHUfQrSDv+MuSUMAe8jzKE4qW+jK+xQU9a03GUnKHkkle+Q0pX/g6jXZ7r1/xAK5Do2kQ+X5xK9cipRgEKwIDAQAB
 -----END PUBLIC KEY-----`)
 
-
 // Check that a valid JWT exists in the Authorization header
 func RequireBasicJwt(request *routing.Context) error {
 	tokenString := string(request.Request.Header.Peek("Authorization"))
@@ -36,14 +35,14 @@ func ValidateJwt(tokenString string) (uuid.UUID, error) {
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, errors.New("unexpected JWT signing method : "+token.Header["alg"].(string))
+			return nil, errors.New("unexpected JWT signing method : " + token.Header["alg"].(string))
 		}
 		key, _ := jwt.ParseRSAPublicKeyFromPEM(publicKey)
 		return key, nil
 	})
 
 	if err != nil {
-		return uuid.UUID{}, errors.New("failed to get claims : "+err.Error())
+		return uuid.UUID{}, errors.New("failed to get claims : " + err.Error())
 	}
 
 	claims, _ := token.Claims.(jwt.MapClaims)
@@ -53,4 +52,11 @@ func ValidateJwt(tokenString string) (uuid.UUID, error) {
 	}
 
 	return userID, nil
+}
+
+func SetCorsHeader(request *routing.Context) error {
+	request.Response.Header.Set("Access-Control-Allow-Origin", "*")
+	request.Response.Header.Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	request.Response.Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	return nil
 }

@@ -8,8 +8,13 @@ import (
 
 func Init() {
 	router := routing.New()
-	router.Post("/window", RequireBasicJwt, windowHandler)
-	router.Post("/process", RequireBasicJwt, processHandler)
+
+	api := router.Group("", SetCorsHeader)
+
+	api.Post("/window", RequireBasicJwt, windowHandler)
+	api.Post("/window/list", RequireBasicJwt, windowListHandler)
+	api.Post("/process", RequireBasicJwt, processHandler)
+	api.Post("/process/list", RequireBasicJwt, processesListHandler)
 
 	log.Fatal(fasthttp.ListenAndServe(":8080", router.HandleRequest))
 }

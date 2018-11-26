@@ -33,16 +33,14 @@ func getValidEvent(sock *zmq4.Socket) (*Focus.Envelope, uuid.UUID, error) {
 	return envelope, userId, nil
 }
 
-
 // MainLoop starts the main program loop that will listen to all events on the previously initialized socket
 // This method is blocking and will only exit if something goes horribly wrong
 func MainLoop(sock *zmq4.Socket) {
-	for ;; {
+	for {
 		envelope, userId, err := getValidEvent(sock)
 		if err != nil {
 			fmt.Println("FAILED TO RECEIVE EVENT", err)
 		}
-
 
 		// Insert events in DB
 		for _, event := range envelope.Events {
