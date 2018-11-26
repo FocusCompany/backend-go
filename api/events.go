@@ -14,19 +14,19 @@ import (
 
 // Activity represents an event in a Go struct.
 type Activity struct {
-	Process string
-	Window  string
-	Start   time.Time
-	End     time.Time
-	Afk     bool
+	Process string `json:"process"`
+	Window  string `json:"window"`
+	Start   time.Time `json:"start"`
+	End     time.Time `json:"end"`
+	Afk     bool `json:"afk"`
 }
 
 // queryParam is a struct that holds the common query parameters for the stat routes
 type queryParam struct {
 	From   time.Time
 	To     time.Time
-	Device string
-	Group  string
+	Device int
+	Group  int
 	UserId uuid.UUID
 }
 
@@ -35,15 +35,17 @@ func getQueryParam(request *routing.Context) (queryParam, error) {
 	// Extract parameters from query
 	from := string(request.PostArgs().Peek("from"))
 	to := string(request.PostArgs().Peek("to"))
+	deviceId := request.PostArgs().GetUintOrZero("device")
+	groupId := request.PostArgs().GetUintOrZero("group")
 
 	queryParam := queryParam{
-		Device: string(request.PostArgs().Peek("device")),
-		Group:  string(request.PostArgs().Peek("group")),
 		UserId: request.Get("userId").(uuid.UUID),
+		Device: deviceId,
+		Group: groupId,
 	}
 
 	// Only one parameter allowed
-	if queryParam.Device != "" && queryParam.Group != "" {
+	if queryParam.Device != 0 && queryParam.Group != 0 {
 		request.Error("cannot use device and group parameters at the same time", fasthttp.StatusPreconditionFailed)
 		return queryParam, errors.New("cannot use device and group parameters at the same time")
 	}
@@ -79,14 +81,16 @@ func getEvents(request *routing.Context) ([]*models.Event, error) {
 	var events []*models.Event
 	query := database.Get().Model(&events).Where("user_id = ?", param.UserId)
 
-	if param.Group != "" { query = query.Where("group_id = ?", param.Group) }
-	if param.Device != "" { query = query.Where("device_id = ?", param.Device) }
+	fmt.Println(param.Group, param.Device, param.UserId, param.From, param.To)
+
+	if param.Group != 0 { query = query.Where("group_id = ?", param.Group) }
+	if param.Device != 0 { query = query.Where("device_id = ?", param.Device) }
 	if !param.From.IsZero() { query = query.Where("time > ?", param.From) }
 	if !param.To.IsZero() { query = query.Where("time < ?", param.To) }
 
 	err = query.Select()
 	if err != nil {
-		fmt.Println("failed to query",  err)
+		fmt.Println("failed to query events",  err)
 		request.Error(err.Error(), fasthttp.StatusInternalServerError)
 		return nil, err
 	}

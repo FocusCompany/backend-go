@@ -75,8 +75,8 @@ func processesListHandler(request *routing.Context) error {
 		Where("user_id = ?", param.UserId).
 		ColumnExpr("DISTINCT process_name")
 
-	if param.Group != "" { query = query.Where("group_id = ?", param.Group) }
-	if param.Device != "" { query = query.Where("device_id = ?", param.Device) }
+	if param.Group != 0 { query = query.Where("group_id = ?", param.Group) }
+	if param.Device != 0 { query = query.Where("device_id = ?", param.Device) }
 	if !param.From.IsZero() { query = query.Where("time > ?", param.From) }
 	if !param.To.IsZero() { query = query.Where("time < ?", param.To) }
 

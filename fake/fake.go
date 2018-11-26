@@ -51,11 +51,11 @@ func main() {
 			PayloadType: "ContextChanged",
 			Payload:     any,
 		}
-		previousTime = previousTime.Add(time.Duration(rand.Int()%40) * time.Minute)
+		previousTime = previousTime.Add(time.Duration(rand.Int() % 40) * time.Minute)
 
 		envelope := Focus.Envelope{
-			DeviceID: "someID",
-			Jwt:      "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiMjY4YTQ4YzctZjliNi00MzI0LWI5MzEtYmFkYmM3Y2M1YzM5IiwiZXhwIjoxNTQzMTY3ODQ2LCJpYXQiOjE1NDMxNjYwNDZ9.0qLV-cJlljMKiuq2W3wwBvtVF6Tr9FlT8O6KlYnWTW4eovV30PH8KmaQuXw-cb2qRX2LtCT7UMKVIn7Ww1UZlOzRSR4lBSc73rqyQEifQj2x9F17ujSDdng6RmAweTE9FoiU8e-1M5VUc3iQnHfVDDViFmYGEV8DOrbJElQxA8E",
+			DeviceID: "23",
+			Jwt:      "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiMjY4YTQ4YzctZjliNi00MzI0LWI5MzEtYmFkYmM3Y2M1YzM5IiwiZXhwIjoxNTQzMjc3MTEwLCJpYXQiOjE1NDMyNzUzMTB9.GjMgbcdrIg-_aT85Rwl_k6m2OH2M4pf8rls6utGe-9SlfSBcsPO1J85gNsISOIAzIylZ9T3dLx1HXXdMBT2k5wsVErPCiQaYOGDccvzBNE1pz6ABqjT9HECExyBFKaadhYWc6xsH5o0c0OlrVogud45tHcMNbEIXpspYITPe3Bk",
 			Events:   []*Focus.Event{&event},
 		}
 

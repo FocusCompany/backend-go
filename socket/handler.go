@@ -11,6 +11,7 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/pebbe/zmq4"
 	"github.com/satori/go.uuid"
+	"strconv"
 	"time"
 )
 
@@ -36,10 +37,12 @@ func getValidEvent(sock *zmq4.Socket) (*Focus.Envelope, uuid.UUID, error) {
 // MainLoop starts the main program loop that will listen to all events on the previously initialized socket
 // This method is blocking and will only exit if something goes horribly wrong
 func MainLoop(sock *zmq4.Socket) {
+	MAIN:
 	for {
 		envelope, userId, err := getValidEvent(sock)
 		if err != nil {
 			fmt.Println("FAILED TO RECEIVE EVENT", err)
+			continue MAIN
 		}
 
 		// Insert events in DB
@@ -64,11 +67,18 @@ func MainLoop(sock *zmq4.Socket) {
 				return
 			}
 
+
+			deviceId, err := strconv.Atoi(envelope.DeviceID)
+			if err != nil {
+				fmt.Println(err)
+				continue MAIN
+			}
+
 			// Insert event into DB
 			eventToInsert := models.Event{
 				UserId:      userId,
-				GroupId:     uuid.UUID{},
-				DeviceId:    uuid.FromStringOrNil(envelope.DeviceID),
+				GroupId:     0,
+				DeviceId:    deviceId,
 				WindowsName: windowName,
 				ProcessName: processName,
 				Afk:         afk,

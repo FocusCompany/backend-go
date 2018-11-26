@@ -6,6 +6,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/qiangxue/fasthttp-routing"
 	"github.com/satori/go.uuid"
+	"github.com/valyala/fasthttp"
 )
 
 var publicKey = []byte(`-----BEGIN PUBLIC KEY-----
@@ -20,6 +21,7 @@ func RequireBasicJwt(request *routing.Context) error {
 	if err != nil {
 		fmt.Printf("RequireBasicJwt JWT: %v", err)
 		fmt.Println("")
+		request.SetStatusCode(fasthttp.StatusForbidden)
 		request.Abort()
 		return err
 	}
@@ -56,7 +58,8 @@ func ValidateJwt(tokenString string) (uuid.UUID, error) {
 
 func SetCorsHeader(request *routing.Context) error {
 	request.Response.Header.Set("Access-Control-Allow-Origin", "*")
+	request.Response.Header.Set("Content-Type", "application/json")
 	request.Response.Header.Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-	request.Response.Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	request.Response.Header.Set("Access-Control-Allow-Headers", "Accept, Content-Type, Origin, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 	return nil
 }
