@@ -13,7 +13,7 @@ RUN dep ensure --vendor-only
 COPY . .
 
 # Protobuf file generation
-RUN make proto
+RUN mkdir -p proto && make proto
 
 RUN go install
 
