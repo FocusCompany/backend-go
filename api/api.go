@@ -17,5 +17,8 @@ func Init() {
 	api.Post("/process", RequireBasicJwt, processHandler)
 	api.Post("/process/list", RequireBasicJwt, processesListHandler)
 
+	api.Get("/filters", RequireBasicJwt, getFiltersHandler)
+	api.Post("/filters", RequireBasicJwt, updateFiltersHandler)
+
 	log.Fatal(fasthttp.ListenAndServe(":8080", router.HandleRequest))
 }

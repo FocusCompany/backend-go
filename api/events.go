@@ -8,7 +8,6 @@ import (
 	"github.com/qiangxue/fasthttp-routing"
 	"github.com/satori/go.uuid"
 	"github.com/valyala/fasthttp"
-	"strconv"
 	"time"
 )
 
@@ -51,20 +50,20 @@ func getQueryParam(request *routing.Context) (queryParam, error) {
 	}
 
 	if from != "" {
-		i, err := strconv.ParseInt(from, 10, 64)
+		i, err := time.Parse(time.RFC3339, from)
 		if err != nil {
 			request.Error(err.Error(), fasthttp.StatusInternalServerError)
 			return queryParam, err
 		}
-		queryParam.From = time.Unix(i, 0)
+		queryParam.From = i
 	}
 	if to != "" {
-		i, err := strconv.ParseInt(from, 10, 64)
+		i, err := time.Parse(time.RFC3339, to)
 		if err != nil {
 			request.Error(err.Error(), fasthttp.StatusInternalServerError)
 			return queryParam, err
 		}
-		queryParam.To = time.Unix(i, 0)
+		queryParam.To = i
 	}
 
 	return queryParam, nil
