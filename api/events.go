@@ -80,8 +80,6 @@ func getEvents(request *routing.Context) ([]*models.Event, error) {
 	var events []*models.Event
 	query := database.Get().Model(&events).Where("user_id = ?", param.UserId)
 
-	fmt.Println(param.Group, param.Device, param.UserId, param.From, param.To)
-
 	if param.Group != 0 { query = query.Where("group_id = ?", param.Group) }
 	if param.Device != 0 { query = query.Where("device_id = ?", param.Device) }
 	if !param.From.IsZero() { query = query.Where("time > ?", param.From) }

@@ -89,7 +89,10 @@ func MainLoop(sock *zmq4.Socket) {
 			if _, err := db.Model(&eventToInsert).Insert(); err != nil {
 				fmt.Println("failed to insert event", err)
 			}
-			fmt.Println("Inserted event", eventToInsert)
+
+			fmt.Println("Inserted event", userId)
+			fmt.Println("device: ", deviceId, "group: ", 0)
+			fmt.Println("window: ", windowName, "process: ", processName)
 		}
 	}
 
