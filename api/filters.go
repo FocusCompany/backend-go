@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/FocusCompany/backend-go/database"
 	"github.com/FocusCompany/backend-go/models"
@@ -18,7 +17,7 @@ func getFiltersHandler(request *routing.Context) error {
 	filterList, err := GetFilters(userId)
 	if err != nil {
 		request.Error(err.Error(), fasthttp.StatusInternalServerError)
-		return err
+		return nil
 	}
 
 	response, err := json.Marshal(filterList)
@@ -55,14 +54,10 @@ func updateFiltersHandler(request *routing.Context) error {
 	userId := request.Get("userId").(uuid.UUID)
 	newFilters := strings.Split(string(request.PostArgs().Peek("filters")), ",")
 
-	if len(newFilters) == 0 {
-		request.Error("missing filter list", fasthttp.StatusFailedDependency)
-		return errors.New("missing filter list")
-	}
-
 	// Get new filters from request
 	var filters []models.Filters
 	for _, filter := range newFilters {
+		if filter == "" { continue } // Respect NON NULL constraint
 		filters = append(filters, models.Filters{
 			UserId: userId,
 			Name:   filter,
@@ -78,7 +73,12 @@ func updateFiltersHandler(request *routing.Context) error {
 		query.Rollback()
 		fmt.Println(err.Error())
 		request.Error("failed to delete previous filters", fasthttp.StatusInternalServerError)
-		return err
+		return nil
+	}
+
+	// If no new ones are provided
+	if len(newFilters) == 1 && newFilters[0] == "" { // Dumb split function
+		return nil
 	}
 
 	// Insert new ones
@@ -87,7 +87,7 @@ func updateFiltersHandler(request *routing.Context) error {
 		query.Rollback()
 		fmt.Println(err.Error())
 		request.Error("failed to insert new filters", fasthttp.StatusInternalServerError)
-		return err
+		return nil
 	}
 
 	// Commit transaction
@@ -95,7 +95,7 @@ func updateFiltersHandler(request *routing.Context) error {
 	if err != nil {
 		fmt.Println(err.Error())
 		request.Error("failed to update filters", fasthttp.StatusInternalServerError)
-		return err
+		return nil
 	}
 
 	return nil

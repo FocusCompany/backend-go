@@ -22,6 +22,7 @@ func main() {
 	}
 
 	socket.Connect("tcp://127.0.0.1:5555")
+	socket.SetIdentity("24")
 	defer socket.Close()
 
 	rand.Seed(time.Now().Unix())
@@ -54,8 +55,8 @@ func main() {
 		previousTime = previousTime.Add(time.Duration(rand.Int() % 40) * time.Minute)
 
 		envelope := Focus.Envelope{
-			DeviceID: "23",
-			Jwt:      "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiMjY4YTQ4YzctZjliNi00MzI0LWI5MzEtYmFkYmM3Y2M1YzM5IiwiZXhwIjoxNTQzMjc3MTEwLCJpYXQiOjE1NDMyNzUzMTB9.GjMgbcdrIg-_aT85Rwl_k6m2OH2M4pf8rls6utGe-9SlfSBcsPO1J85gNsISOIAzIylZ9T3dLx1HXXdMBT2k5wsVErPCiQaYOGDccvzBNE1pz6ABqjT9HECExyBFKaadhYWc6xsH5o0c0OlrVogud45tHcMNbEIXpspYITPe3Bk",
+			DeviceID: "24",
+			Jwt:      "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiMjY4YTQ4YzctZjliNi00MzI0LWI5MzEtYmFkYmM3Y2M1YzM5IiwiZGV2aWNlX2lkIjoxLCJncm91cHMiOlt7ImlkX2NvbGxlY3Rpb25zIjoxLCJjb2xsZWN0aW9uc19uYW1lIjoic29tZWdyb3VwIn1dLCJleHAiOjE1NDM0NDEyODYsImlhdCI6MTU0MzQzOTQ4Nn0.s6s1TkqGHD68JGUkNQ0bFS0NyEXBmxnP1wTC1XIs_a4ZAZhE1UbAdQKVAikKODFtUMAIqtoD0oMcfwrXJiLGGy_xpVpIhL1dl0dhO5vbARtnlNFpzNrjwpHCi2eP1uBzUCm9RBVbLtBgh-okA1f1EuyOhOz6sdQpANGb3D-G9Sk",
 			Events:   []*Focus.Event{&event},
 		}
 

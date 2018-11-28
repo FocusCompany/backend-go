@@ -17,11 +17,20 @@ MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDdlatRjRjogo3WojgGHFHYLugdUWAY9iR3fy4arWNA
 func RequireBasicJwt(request *routing.Context) error {
 	tokenString := string(request.Request.Header.Peek("Authorization"))
 
-	userId, err := ValidateJwt(tokenString)
+	claims, err := ValidateJwt(tokenString)
+
 	if err != nil {
 		fmt.Printf("RequireBasicJwt JWT: %v", err)
 		fmt.Println("")
 		request.SetStatusCode(fasthttp.StatusForbidden)
+		request.Abort()
+		return err
+	}
+
+	userId, err := uuid.FromString(claims["uuid"].(string))
+
+	if err != nil {
+		request.SetStatusCode(fasthttp.StatusInternalServerError)
 		request.Abort()
 		return err
 	}
@@ -32,7 +41,7 @@ func RequireBasicJwt(request *routing.Context) error {
 
 // Validate JWT ensures the given token is valid and returns the user ID it contains.
 // Returns an error and an empty user ID if the token is not valid.
-func ValidateJwt(tokenString string) (uuid.UUID, error) {
+func ValidateJwt(tokenString string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, errors.New("unexpected JWT signing method : " + token.Header["alg"].(string))
@@ -42,16 +51,11 @@ func ValidateJwt(tokenString string) (uuid.UUID, error) {
 	})
 
 	if err != nil {
-		return uuid.UUID{}, errors.New("failed to get claims : " + err.Error())
+		return nil, errors.New("failed to get claims : " + err.Error())
 	}
 
 	claims, _ := token.Claims.(jwt.MapClaims)
-	userID, err := uuid.FromString(claims["uuid"].(string))
-	if err != nil {
-		return uuid.UUID{}, errors.New("missing userID in JWT")
-	}
-
-	return userID, nil
+	return claims, nil
 }
 
 func SetCorsHeader(request *routing.Context) error {

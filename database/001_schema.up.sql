@@ -9,4 +9,4 @@ CREATE TABLE focus.events (
   "process_name" VARCHAR(400),
   "afk" BOOLEAN DEFAULT false,
   "time" TIMESTAMP NOT NULL
-)
+);

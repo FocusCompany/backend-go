@@ -16,25 +16,40 @@ import (
 	"time"
 )
 
-func getValidEvent(received string) (*Focus.Envelope, uuid.UUID, error) {
+func getValidEvent(received string) (*Focus.Envelope, uuid.UUID, []models.Group, error) {
 	envelope := &Focus.Envelope{}
 	err := proto.Unmarshal([]byte(received), envelope)
 	if err != nil {
-		return nil, uuid.UUID{}, errors.New("proto.Unmarshal error " + err.Error())
+		return nil, uuid.UUID{}, nil, errors.New("proto.Unmarshal error " + err.Error())
 	}
 
 	// Check JWT from envelope
-	userId, err := api.ValidateJwt(envelope.Jwt)
+	claims, err := api.ValidateJwt(envelope.Jwt)
 	if err != nil {
-		return nil, uuid.UUID{}, errors.New("Invalid JWT " + err.Error())
+		return nil, uuid.UUID{}, nil, errors.New("Invalid JWT " + err.Error())
 	}
-	return envelope, userId, nil
+
+	userId := uuid.FromStringOrNil(claims["uuid"].(string))
+	groupsClaim := claims["groups"].([]interface{})
+
+	var groups []models.Group
+	for _, group := range groupsClaim {
+		groupId := group.(map[string]interface{})["id_collections"].(float64) // Type assertion of hell
+		groupName := group.(map[string]interface{})["collections_name"].(string) // Type assertion of hell
+
+		groups = append(groups, models.Group{
+			ID: int32(groupId),
+			Name:    groupName,
+		})
+	}
+
+	return envelope, userId, groups, nil
 }
 
 // MainLoop starts the main program loop that will listen to all events on the previously initialized socket
 // This method is blocking and will only exit if something goes horribly wrong
-func MainLoop(sock *zmq.Socket) {
-	//  Backend socket talks to workers over inproc
+func MainLoop() {
+	// Backend socket talks to workers over inproc
 	backend, _ := zmq.NewSocket(zmq.DEALER)
 	defer backend.Close()
 	backend.Bind("inproc://backend")
@@ -59,14 +74,18 @@ func eventHandler() {
 		msg, _ := worker.RecvMessage(0)
 		identity, content := pop(msg)
 
-		worker.SendMessage(identity, "true")
+		// TODO: use filters here
+		payload := &Focus.FilterEventPayload{IsDndOn:true}
+		message, _ := proto.Marshal(payload)
+		worker.SendMessage(identity, message)
 
-		envelope, userId, err := getValidEvent(content[0])
+
+		envelope, userId, groups, err := getValidEvent(content[0])
 		if err != nil {
 			fmt.Println("failed to get event: ", err)
 		}
 
-		processEnvelope(envelope, userId)
+		processEnvelope(envelope, userId, groups)
 	}
 }
 
@@ -81,7 +100,14 @@ func pop(msg []string) (head, tail []string) {
 	return
 }
 
-func processEnvelope(envelope *Focus.Envelope, userId uuid.UUID) {
+func processEnvelope(envelope *Focus.Envelope, userId uuid.UUID, groups []models.Group) {
+	db := database.Get()
+
+	// Insert groups
+	if _, err := db.Model(&groups).OnConflict("DO NOTHING").Insert(); err != nil {
+		fmt.Println("failed to insert group", err)
+	}
+
 	for _, event := range envelope.Events {
 		windowName := ""
 		processName := ""
@@ -110,24 +136,39 @@ func processEnvelope(envelope *Focus.Envelope, userId uuid.UUID) {
 			return // Couldn't read device ID, break
 		}
 
+
+		/////////////////////////////
+		// INSERT EVERYTHING IN DB //
+		/////////////////////////////
+
+
 		// Insert event into DB
 		eventToInsert := models.Event{
 			UserId:      userId,
-			GroupId:     0,
 			DeviceId:    deviceId,
 			WindowsName: windowName,
 			ProcessName: processName,
 			Afk:         afk,
 			Time:        time.Unix(event.Timestamp.Seconds, int64(event.Timestamp.Nanos)),
 		}
-
-		db := database.Get()
 		if _, err := db.Model(&eventToInsert).Insert(); err != nil {
 			fmt.Println("failed to insert event", err)
 		}
 
+		// Associate event with each group
+		var groupEvents []models.GroupEvent
+		for _, group := range groups {
+			groupEvents = append(groupEvents, models.GroupEvent{
+				EventId: eventToInsert.ID,
+				GroupId: group.ID,
+			})
+		}
+		if _, err := db.Model(&groupEvents).Insert(); err != nil {
+			fmt.Println("failed to associate event to group", err)
+		}
+
 		fmt.Println("Inserted event for user", userId)
-		fmt.Println("device: ", deviceId, "group: ", 0)
+		fmt.Println("device: ", deviceId, "groups: ", groups)
 		fmt.Println("window: ", windowName, "process: ", processName, "\n")
 	}
 }

@@ -10,10 +10,10 @@ func main() {
 	database.Init() // Create the connection to the DB
 	go api.Init()   // Instanciate the API router
 
-	sock, err := socket.InitSocket() // Create a socket listening on tcp://*:5555
+	err := socket.InitSocket() // Create a socket listening on tcp://*:5555
 	if err != nil {
 		panic(err)
 	}
 
-	socket.MainLoop(sock) // Listen to message on socket
+	socket.MainLoop() // Listen to message on socket
 }
