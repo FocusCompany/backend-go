@@ -5,29 +5,34 @@ import (
 	"github.com/pebbe/zmq4"
 )
 
+var (
+	frontend *zmq4.Socket
+)
+
 // InitSocket returns a socket listening on tcp://*:5555
 func InitSocket() (*zmq4.Socket, error) {
-	socket, err := zmq4.NewSocket(zmq4.DEALER)
+	var err error
+	frontend, err = zmq4.NewSocket(zmq4.ROUTER)
 
 	if err != nil {
-		return nil, errors.New("failed to create socket" + err.Error())
+		return nil, errors.New("failed to create frontend" + err.Error())
 	}
 
-	err = socket.SetCurveServer(1)
+	err = frontend.SetCurveServer(1)
 	if err == nil {
-		err = socket.SetCurveSecretkey("JTKVSB%%)wK0E.X)V>+}o?pNmC{O&4W4b!Ni{Lh6")
+		err = frontend.SetCurveSecretkey("JTKVSB%%)wK0E.X)V>+}o?pNmC{O&4W4b!Ni{Lh6")
 	} else {
-		return nil, errors.New("failed to set socket curve" + err.Error())
+		return nil, errors.New("failed to set frontend curve" + err.Error())
 	}
 
 	if err != nil {
-		return nil, errors.New("failed to set socket curve" + err.Error())
+		return nil, errors.New("failed to set frontend curve" + err.Error())
 	}
 
-	err = socket.Bind("tcp://*:5555")
+	err = frontend.Bind("tcp://*:5555")
 	if err != nil {
-		return nil, errors.New("failed to bind socket" + err.Error())
+		return nil, errors.New("failed to bind frontend" + err.Error())
 	}
 
-	return socket, nil
+	return frontend, nil
 }

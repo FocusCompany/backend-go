@@ -15,6 +15,22 @@ import (
 func getFiltersHandler(request *routing.Context) error {
 	userId := request.Get("userId").(uuid.UUID)
 
+	filterList, err := GetFilters(userId)
+	if err != nil {
+		request.Error(err.Error(), fasthttp.StatusInternalServerError)
+		return err
+	}
+
+	response, err := json.Marshal(filterList)
+	if err != nil {
+		request.Error("failed to marshal JSON" + err.Error(), fasthttp.StatusInternalServerError)
+	}
+	request.SetBody(response)
+	return nil
+}
+
+// GetFilters will return all filters associated with a given userId
+func GetFilters(userId uuid.UUID) ([]string, error) {
 	var filters []models.Filters
 	count, err := database.Get().
 		Model(&filters).
@@ -24,8 +40,7 @@ func getFiltersHandler(request *routing.Context) error {
 
 	if err != nil {
 		fmt.Println("getFiltersHandler " + err.Error())
-		request.Error(err.Error(), fasthttp.StatusInternalServerError)
-		return err
+		return nil, err
 	}
 
 	filterList := make([]string, count)
@@ -33,12 +48,7 @@ func getFiltersHandler(request *routing.Context) error {
 		filterList[i] = filter.Name
 	}
 
-	response, err := json.Marshal(filterList)
-	if err != nil {
-		request.Error("failed to marshal JSON" + err.Error(), fasthttp.StatusInternalServerError)
-	}
-	request.SetBody(response)
-	return nil
+	return filterList, nil
 }
 
 func updateFiltersHandler(request *routing.Context) error {

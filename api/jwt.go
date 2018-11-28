@@ -33,8 +33,6 @@ func RequireBasicJwt(request *routing.Context) error {
 // Validate JWT ensures the given token is valid and returns the user ID it contains.
 // Returns an error and an empty user ID if the token is not valid.
 func ValidateJwt(tokenString string) (uuid.UUID, error) {
-	fmt.Printf("JWT = %s\n", tokenString)
-
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, errors.New("unexpected JWT signing method : " + token.Header["alg"].(string))
