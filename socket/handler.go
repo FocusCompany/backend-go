@@ -30,17 +30,19 @@ func getValidEvent(received string) (*Focus.Envelope, uuid.UUID, []models.Group,
 	}
 
 	userId := uuid.FromStringOrNil(claims["uuid"].(string))
-	groupsClaim := claims["groups"].([]interface{})
 
 	var groups []models.Group
-	for _, group := range groupsClaim {
-		groupId := group.(map[string]interface{})["id_collections"].(float64) // Type assertion of hell
-		groupName := group.(map[string]interface{})["collections_name"].(string) // Type assertion of hell
 
-		groups = append(groups, models.Group{
-			ID: int32(groupId),
-			Name:    groupName,
-		})
+	if claims["groups"] != nil {
+		groupsClaim := claims["groups"].([]interface{})
+		for _, group := range groupsClaim {
+			groupId := group.(map[string]interface{})["id_collections"].(float64) // Type assertion of hell
+			groupName := group.(map[string]interface{})["collections_name"].(string) // Type assertion of hell
+			groups = append(groups, models.Group{
+				ID: int32(groupId),
+				Name:    groupName,
+			})
+		}
 	}
 
 	return envelope, userId, groups, nil
@@ -74,10 +76,6 @@ func eventHandler() {
 		msg, _ := worker.RecvMessage(0)
 		identity, content := pop(msg)
 
-		// TODO: use filters here
-		payload := &Focus.FilterEventPayload{IsDndOn:true}
-		message, _ := proto.Marshal(payload)
-		worker.SendMessage(identity, message)
 
 
 		envelope, userId, groups, err := getValidEvent(content[0])
@@ -86,6 +84,10 @@ func eventHandler() {
 		}
 
 		processEnvelope(envelope, userId, groups)
+
+		payload := applyFilters(userId, envelope)
+		message, _ := proto.Marshal(payload)
+		worker.SendMessage(identity, message)
 	}
 }
 
@@ -104,8 +106,10 @@ func processEnvelope(envelope *Focus.Envelope, userId uuid.UUID, groups []models
 	db := database.Get()
 
 	// Insert groups
-	if _, err := db.Model(&groups).OnConflict("DO NOTHING").Insert(); err != nil {
-		fmt.Println("failed to insert group", err)
+	if len(groups) != 0 {
+		if _, err := db.Model(&groups).OnConflict("DO NOTHING").Insert(); err != nil {
+			fmt.Println("failed to insert group", err)
+		}
 	}
 
 	for _, event := range envelope.Events {
@@ -163,12 +167,55 @@ func processEnvelope(envelope *Focus.Envelope, userId uuid.UUID, groups []models
 				GroupId: group.ID,
 			})
 		}
-		if _, err := db.Model(&groupEvents).Insert(); err != nil {
-			fmt.Println("failed to associate event to group", err)
+		if len(groups) != 0 {
+			if _, err := db.Model(&groupEvents).Insert(); err != nil {
+				fmt.Println("failed to associate event to group", err)
+			}
 		}
 
 		fmt.Println("Inserted event for user", userId)
 		fmt.Println("device: ", deviceId, "groups: ", groups)
 		fmt.Println("window: ", windowName, "process: ", processName, "\n")
 	}
+}
+
+func applyFilters(userId uuid.UUID, envelope *Focus.Envelope) *Focus.FilterEventPayload {
+	enableDnd := false
+
+	processName := ""
+	afk := false
+	event := envelope.Events[0]
+
+	if event.PayloadType == "Afk" {
+		afk = true
+	} else if event.PayloadType == "ContextChanged" {
+		payload := &Focus.ContextEventPayload{}
+
+		if err := ptypes.UnmarshalAny(event.Payload, payload); err != nil {
+			fmt.Println("failed to unmarschal event", err)
+			return nil
+		}
+		processName = string(payload.ProcessName)
+
+	} else {
+		return nil
+	}
+
+	// Fetch user filters
+	var filters []models.Filters
+	err := database.Get().Model(&filters).Column("name").Where("user_id = ?", userId).Select()
+	if err != nil {
+		fmt.Println("failed to query filters", err)
+	}
+
+	for _, filter := range filters {
+		if filter.Name == processName {
+			fmt.Println("filter matched, activating DND")
+			enableDnd = true
+		} else if afk == true {
+			enableDnd = false
+		}
+	}
+
+	return &Focus.FilterEventPayload{IsDndOn:enableDnd}
 }

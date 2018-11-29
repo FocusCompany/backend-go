@@ -78,7 +78,7 @@ func getEvents(request *routing.Context) ([]*models.Event, error) {
 
 	// Fetch all events from DB
 	var events []*models.Event
-	query := database.Get().Model(&events).Where("event.user_id = ?", param.UserId)
+	query := database.Get().Model(&events).Where("event.user_id = ?", param.UserId).Order("time ASC")
 
 	if param.Group != 0 {
 		query = query.Join(" FULL OUTER JOIN focus.event_group AS eg ON eg.event_id = event.id").Where("eg.group_id = ?", param.Group)
