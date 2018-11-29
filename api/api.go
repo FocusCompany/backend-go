@@ -20,5 +20,7 @@ func Init() {
 	api.Get("/filters", RequireBasicJwt, getFiltersHandler)
 	api.Post("/filters", RequireBasicJwt, updateFiltersHandler)
 
+	api.Get("/dnd", RequireBasicJwt, getTotalDndHandler)
+
 	log.Fatal(fasthttp.ListenAndServe(":8080", router.HandleRequest))
 }

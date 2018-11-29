@@ -211,6 +211,7 @@ func applyFilters(userId uuid.UUID, envelope *Focus.Envelope) *Focus.FilterEvent
 	for _, filter := range filters {
 		if filter.Name == processName {
 			fmt.Println("filter matched, activating DND")
+			incrementDnd(userId)
 			enableDnd = true
 		} else if afk == true {
 			enableDnd = false
@@ -218,4 +219,22 @@ func applyFilters(userId uuid.UUID, envelope *Focus.Envelope) *Focus.FilterEvent
 	}
 
 	return &Focus.FilterEventPayload{IsDndOn:enableDnd}
+}
+
+func incrementDnd(userId uuid.UUID) {
+	dnd := models.Dnd{
+		UserId:      userId,
+		Activations: 0,
+	}
+
+	_, err := database.Get().Model(&dnd).SelectOrInsert()
+	if err != nil {
+		fmt.Println("failed to update DND count", err)
+	}
+
+	dnd.Activations++
+	_, err = database.Get().Model(&dnd).Where("user_id = ?", userId).Update()
+	if err != nil {
+		fmt.Println("failed to increment DND count", err)
+	}
 }
