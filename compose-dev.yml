@@ -1,0 +1,30 @@
+version: "3"
+networks:
+  backend:
+    driver: bridge
+
+services:
+  focus-backend-db:
+    build:
+      context: .
+      dockerfile: database/Dockerfile
+    container_name: db
+    networks:
+      - backend
+    ports:
+      - "5433:5432"
+
+  backend:
+    image: thefocuscompany/backend-go:latest
+    container_name: focus-backend
+    networks:
+      - backend
+    ports:
+      - "8080:8080"
+      - "5555:5555"
+    environment:
+      - DB_ADDR=db:5432
+      - VIRTUAL_HOST=backend.etiennepasteur.com
+      - LETSENCRYPT_HOST=backend.etiennepasteur.com
+      - LETSENCRYPT_EMAIL=etienne.pasteur@epitech.eu
+      - VIRTUAL_PORT=8080
