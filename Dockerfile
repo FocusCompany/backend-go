@@ -2,7 +2,11 @@ FROM golang:1.10-alpine as build
 
 RUN apk update && apk add --no-cache git protobuf-dev make zeromq zeromq-dev gcc  musl-dev
 RUN wget -q -O - https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-RUN go get -u github.com/golang/protobuf/protoc-gen-go
+
+RUN go get -d -u github.com/golang/protobuf/protoc-gen-go
+RUN git -C "$(go env GOPATH)"/src/github.com/golang/protobuf checkout v1.2.0
+RUN go install github.com/golang/protobuf/protoc-gen-go
+# RUN go get -u github.com/golang/protobuf/protoc-gen-go
 
 WORKDIR /go/src/github.com/FocusCompany/backend-go
 

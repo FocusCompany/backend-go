@@ -6,12 +6,13 @@ fake:
 
 
 DB_ADDR ?= 127.0.0.1
+DB_PORT ?= 5432
 migrate:
-	migrate -source file://database/ -database "postgres://postgres@?sslmode=disable&host=$(DB_ADDR)" up
+	migrate -source file://database/ -database "postgres://postgres@?sslmode=disable&host=$(DB_ADDR)&port=$(DB_PORT)" up
 migrate-down:
-	migrate -source file://database/ -database "postgres://postgres@?sslmode=disable&host=$(DB_ADDR)" down
+	migrate -source file://database/ -database "postgres://postgres@?sslmode=disable&host=$(DB_ADDR)&port=$(DB_PORT)" down
 drop-db:
-	migrate -source file://database/ -database "postgres://postgres@?sslmode=disable&host=$(DB_ADDR)" drop
+	migrate -source file://database/ -database "postgres://postgres@?sslmode=disable&host=$(DB_ADDR)&port=$(DB_PORT)" drop
 migrate-new:
 	migrate create -dir database -ext sql $(FILE)
 

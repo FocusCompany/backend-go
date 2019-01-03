@@ -77,17 +77,15 @@ func updateFiltersHandler(request *routing.Context) error {
 	}
 
 	// If no new ones are provided
-	if len(newFilters) == 1 && newFilters[0] == "" { // Dumb split function
-		return nil
-	}
-
-	// Insert new ones
-	_, err = query.Model(&filters).Insert()
-	if err != nil {
-		query.Rollback()
-		fmt.Println(err.Error())
-		request.Error("failed to insert new filters", fasthttp.StatusInternalServerError)
-		return nil
+	if !(len(newFilters) == 1 && newFilters[0] == "") { // Dumb split function
+		// Insert new ones
+		_, err = query.Model(&filters).Insert()
+		if err != nil {
+			query.Rollback()
+			fmt.Println(err.Error())
+			request.Error("failed to insert new filters", fasthttp.StatusInternalServerError)
+			return nil
+		}
 	}
 
 	// Commit transaction
